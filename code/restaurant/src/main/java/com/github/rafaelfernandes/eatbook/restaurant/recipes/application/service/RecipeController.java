@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class RecipeController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    public UUID create(@RequestBody @Valid RecipeInput input) throws RecipeFoundException {
+    public ResponseEntity<RecipeResponse> create(@RequestBody @Valid RecipeInput input) throws RecipeFoundException {
 
         Recipe recipeExist = search.searchByName(input.getName());
 
@@ -38,18 +39,57 @@ public class RecipeController {
             throw new RecipeFoundException();
         }
 
-        return save.execute(input).getId();
+        RecipeResponse response = new RecipeResponse();
+
+        response.setTimestamp(LocalDateTime.now());
+        response.setRecipe(save.execute(input));
+        Message message = new Message();
+        message.setMessage("Receita cadastrada com sucesso!");
+        message.setStatus(HttpStatus.CREATED);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Recipe> getById(@PathVariable("id") @Valid UUID id) throws RecipeNotFoundException {
+    public ResponseEntity<RecipeResponse> getById(@PathVariable("id") @Valid UUID id) throws RecipeNotFoundException {
 
         Optional<Recipe> recipe = search.searchById(id);
 
         if (recipe.isEmpty()) throw new RecipeNotFoundException();
 
-        return new ResponseEntity<>(recipe.get(), HttpStatus.OK);
+        RecipeResponse response = new RecipeResponse();
+
+        response.setTimestamp(LocalDateTime.now());
+        response.setRecipe(recipe.get());
+        Message message = new Message();
+        message.setMessage("Receita encontrada!");
+        message.setStatus(HttpStatus.CREATED);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<RecipeResponse> searchByName(
+            @RequestParam(value = "name", required = true) String name
+    ) throws RecipeNotFoundException {
+
+        Optional<Recipe> recipe = Optional.ofNullable(search.searchByName(name));
+
+        if (recipe.isEmpty()) throw new RecipeNotFoundException();
+
+        RecipeResponse response = new RecipeResponse();
+
+        response.setTimestamp(LocalDateTime.now());
+        response.setRecipe(recipe.get());
+        Message message = new Message();
+        message.setMessage("Receita encontrada!");
+        message.setStatus(HttpStatus.CREATED);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
 }

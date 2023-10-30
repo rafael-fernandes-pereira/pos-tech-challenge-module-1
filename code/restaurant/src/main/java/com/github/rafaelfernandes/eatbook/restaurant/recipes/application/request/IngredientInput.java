@@ -2,8 +2,6 @@ package com.github.rafaelfernandes.eatbook.restaurant.recipes.application.reques
 
 import lombok.Data;
 
-import java.util.UUID;
-
 @Data
 public class IngredientInput {
     private String name;
