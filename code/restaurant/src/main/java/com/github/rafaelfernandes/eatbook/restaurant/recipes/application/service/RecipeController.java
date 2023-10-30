@@ -2,6 +2,7 @@ package com.github.rafaelfernandes.eatbook.restaurant.recipes.application.servic
 
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.application.request.RecipeInput;
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.application.request.RecipeStepInput;
+import com.github.rafaelfernandes.eatbook.restaurant.recipes.application.response.MeasureResponse;
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.application.response.Message;
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.application.response.RecipeResponse;
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.domain.entity.Recipe;
@@ -9,6 +10,7 @@ import com.github.rafaelfernandes.eatbook.restaurant.recipes.domain.exception.Re
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.domain.exception.RecipeNotFoundException;
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.domain.service.Save;
 import com.github.rafaelfernandes.eatbook.restaurant.recipes.domain.service.Search;
+import com.github.rafaelfernandes.eatbook.restaurant.recipes.domain.valueobject.Measure;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
@@ -18,8 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/recipe")
@@ -46,6 +48,7 @@ public class RecipeController {
         Message message = new Message();
         message.setMessage("Receita cadastrada com sucesso!");
         message.setStatus(HttpStatus.CREATED);
+        response.setMessage(message);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -65,6 +68,7 @@ public class RecipeController {
         Message message = new Message();
         message.setMessage("Receita encontrada!");
         message.setStatus(HttpStatus.CREATED);
+        response.setMessage(message);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
 
@@ -87,9 +91,30 @@ public class RecipeController {
         Message message = new Message();
         message.setMessage("Receita encontrada!");
         message.setStatus(HttpStatus.CREATED);
+        response.setMessage(message);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
+
+    @GetMapping("/measures")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<MeasureResponse> getAllMeasures(){
+
+        Map<Measure, String> measureStringMap = Arrays.stream(Measure.values())
+                .collect(Collectors.toMap(measure -> measure, Measure::getDisplayName));
+
+        MeasureResponse response = new MeasureResponse();
+        Message message = new Message();
+        message.setMessage("Lista de medidas");
+        message.setStatus(HttpStatus.CREATED);
+        response.setMessage(message);
+
+        response.setMeasure(measureStringMap);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    }
+
 
 }
